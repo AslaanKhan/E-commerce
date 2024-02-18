@@ -2,11 +2,12 @@ import Link from "next/link";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ArrowDownToLine, CheckCircle, Leaf } from "lucide-react";
+import ProductReel from "@/components/ProductReel";
 
 export default function Home() {
   const perks =[
   {
-    name:"Instant Delivery",
+    name:"Fast Delivery",
     Icon: ArrowDownToLine,
     description: "Get your assets delivered to your email in seconds and download them right away"
   },
@@ -16,7 +17,7 @@ export default function Home() {
     description: "Every asset on our platform is verified by our team to ensure our highest quality standards. Not happy? We offer a 30-day refund gurantee."
   },
   {
-    name:"For the planet",
+    name:"Best in class",
     Icon: Leaf,
     description: "We've pledged 1% of sales to the preservation and restoration of environment"
   },
@@ -41,7 +42,7 @@ export default function Home() {
           <Button variant='ghost' >our quality Promise &rarr;</Button>
         </div>
       </div>
-      {/* TODO: List Products */}
+      <ProductReel query={{sort: 'desc', limit:4}} href="/products" title="Brand new" />
     </MaxWidthWrapper>
     <section>
       <MaxWidthWrapper className="py-20">

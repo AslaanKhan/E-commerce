@@ -8,16 +8,18 @@ import { cn } from "@/lib/utils"
 import { AuthCredentialsValidator, TAuthCredentialsValidator } from "@/lib/validators/account-credentials-validator"
 import { trpc } from "@/trpc/client"
 import { zodResolver } from '@hookform/resolvers/zod'
+import { isError } from "@tanstack/react-query"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from 'react-hook-form'
 import { toast } from "sonner"
 import { ZodError } from "zod"
 
 
 const Page = () => {
-            
+    const searchParams = useSearchParams();
+    const origin = searchParams.get('origin')            
     const router = useRouter()
     const {
         register, 
@@ -26,22 +28,25 @@ const Page = () => {
     } = useForm<TAuthCredentialsValidator>({
         resolver:zodResolver(AuthCredentialsValidator),
     })
-    const { mutate, isLoading } = trpc.auth.createPayLoadUser.useMutation({
-        onError:(err)=>{
-            if(err.data?.code === "CONFLICT"){
-                toast.error('An account alredy exists with the same email. Sign in instead?')
-                return
-            }
-            if(err instanceof ZodError){
-                toast.error(err.issues[0].message)
+    const { mutate:signIn, isLoading } = trpc.auth.signIn.useMutation({
+        onSuccess: ()=>{
+            toast.success('Signed in successfully')
+            router.refresh()
+
+            if(origin){
+                router.push(`/${origin}`)
                 return
             }
 
-            toast.error('Something went wrong please try again.')
+            if(!origin){
+                router.push('/')
+                return
+            }
         },
-        onSuccess:({sentToEmail})=>{
-            toast.success(`Verification email sent to ${sentToEmail}.`)
-            router.push('/verify-email?to='+sentToEmail)
+        onError:(err)=>{
+            if(err.data?.code === 'UNAUTHORIZED'){
+                toast.error('Invalid email or password.')
+            }
         }
     })
 
@@ -51,7 +56,7 @@ const Page = () => {
         email,
         password}:
         TAuthCredentialsValidator) =>{
-        mutate({email, password})
+        signIn({email, password})
             
     }
 
